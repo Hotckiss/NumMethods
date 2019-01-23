@@ -98,7 +98,7 @@ def generate_first_steps(z): # gen sj
         s += step(z, i)
     return res
 
-def generate_diff_steps(prev): # [sj]->[s'j]->[s''j]..., длина списка сокращается всегда на 2
+def generate_diff_steps(prev): # [sj]->[s'j]->[s''j]..., длина списка сокращается всегда
     res = []
     for i in range(2, len(prev)):
         diff1 = prev[i] - prev[i-1]
@@ -110,7 +110,7 @@ def generate_diff_steps(prev): # [sj]->[s'j]->[s''j]..., длина списка
     
 def eitk_iterated(z):
     start = generate_first_steps(z)
-    while len(start) > 2: # can generate non-empty sequence
+    while len(start) > 4: # can generate non-empty sequence
         start = generate_diff_steps(start)
     return start[-1]
 
@@ -153,9 +153,11 @@ def convergecce_speed_in_Radius():
     x = []
     y = []
     
-    for i in range(1, 200): 
+    for i in range(1, 190): 
         arg = (i - 100) / 100.0
         z = arg
+        if z == 0.0:
+            continue
         ans = eitk(z, 10000)
         res = eitk_iterated(z)
         x.append(i)
@@ -181,3 +183,4 @@ if __name__ == "__main__":
     print('Simple    ' + str(eitk((1j - 1) / math.sqrt(2), 300)))
     convergecce_speed()
     convergecce_speed_iter()
+    convergecce_speed_in_Radius()
