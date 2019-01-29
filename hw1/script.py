@@ -93,7 +93,7 @@ def eitk(z, steps):
 def generate_first_steps(z): # gen sj
     res = []
     s = z
-    for i in range(2, 100): # 100 steps
+    for i in range(2, 600): # 600 steps
         res.append(s)
         s += step(z, i)
     return res
@@ -110,16 +110,17 @@ def generate_diff_steps(prev): # [sj]->[s'j]->[s''j]..., длина списка
     
 def eitk_iterated(z):
     start = generate_first_steps(z)
-    while len(start) > 4: # can generate non-empty sequence
+    while len(start) > 300: # can generate non-empty sequence
         start = generate_diff_steps(start)
     return start[-1]
 
 def P2R(radii, angles):
     return radii * np.exp(1j*angles)
 
-def convergecce_speed():
+def convergence_speed():
     x = []
     y = []
+    y2 = []
     
     for i in range(1, 100): # radius=1, angle from 0 to pi with step pi/100
         angle = math.pi * i / 100.0
@@ -127,13 +128,17 @@ def convergecce_speed():
         z = P2R(rad, angle)
         ans = eitk(z, 10000)
         res = eitk(z, 300)
+        res2 = eitk_iterated(z)
         x.append(i)
-        y.append(abs(ans - res))
+        y.append(np.log10(1 / abs(ans - res)))
+        y2.append(np.log10(1 / abs(ans - res2)))
     graph.plot(x, y, label="speed.png")
+    graph.plot(x, y2, label="speed.png")
+    graph.legend(['eitken', 'eitken iter'], loc='upper left')
     graph.savefig("speed.png")
     graph.close()
 
-def convergecce_speed_iter():
+def convergence_speed_iter():
     x = []
     y = []
     
@@ -144,12 +149,12 @@ def convergecce_speed_iter():
         ans = eitk(z, 10000)
         res = eitk_iterated(z)
         x.append(i)
-        y.append(abs(ans - res))
+        y.append(np.log10(1 / abs(ans - res)))
     graph.plot(x, y, label="speed_iter.png")
     graph.savefig("speed_iter.png")
     graph.close()
 
-def convergecce_speed_in_Radius():
+def convergence_speed_in_Radius():
     x = []
     y = []
     
@@ -160,27 +165,84 @@ def convergecce_speed_in_Radius():
             continue
         ans = eitk(z, 10000)
         res = eitk_iterated(z)
-        x.append(i)
-        y.append(abs(ans - res))
+        if ans != res:
+            x.append(i)
+            y.append(np.log10(1 / abs(ans - res)))
     graph.plot(x, y, label="speed_iter_R.png")
     graph.savefig("speed_iter_R.png")
     graph.close()
 
+
+def simple_sum(z, n):
+    ans = 0
+    for i in range(1, n):
+        ans += step(z, i)
+    return ans
+
+def convergence_speed_for_N(z, fn):
+    x = []
+    ye = []
+    ys = []
+    ans = eitk(z, 10000)
+    
+    for i in range(1, 400):
+        res = eitk(z, i)
+        res_simple = simple_sum(z, i)
+        if ans != res and ans != res_simple:
+            x.append(i)
+            ye.append(np.log(abs(ans - res)))
+            ys.append(np.log(abs(ans - res_simple)))
+    graph.plot(x, ye, label=fn)
+    graph.plot(x, ys, label=fn)
+    graph.legend(['eitken', 'simple sum'], loc='upper left')
+    graph.savefig(fn)
+    graph.close()
+
+def convergence_speed_for_logN(z, fn):
+    x = []
+    ye = []
+    ys = []
+    
+    ans = eitk(z, 20000)
+    for i in range(1, 4096):
+        res = eitk(z, i)
+        res_simple = simple_sum(z, i)
+        if ans != res and ans != res_simple:
+            x.append(np.log(i))
+            ye.append(np.log(abs(ans - res)))
+            ys.append(np.log(abs(ans - res_simple)))
+    graph.plot(x, ye, label=fn)
+    graph.plot(x, ys, label=fn)
+    graph.legend(['eitken', 'simple sum'], loc='upper left')
+    graph.savefig(fn)
+    graph.close()
+
 if __name__ == "__main__":
-    plotWa("Wa.png")
-    plotWb("Wb.png")
-    plotDiffW("DiffW.png")
+    #plotWa("Wa.png")
+    #plotWb("Wb.png")
+    #plotDiffW("DiffW.png")
+    print('-0.9')
+    r1 = eitk(-0.9, 10000)
+    print('Res       ' + str(eitk(-0.9, 10000)))
     print('Iterated  ' + str(eitk_iterated(-0.9)))
     print('Simple    ' + str(eitk(-0.9, 300)))
-    print('\n')
+    print('\ni')
+    print('Res       ' + str(eitk(1j, 10000)))
     print('Iterated  ' + str(eitk_iterated(1j)))
     print('Simple    ' + str(eitk(1j, 300)))
-    print('\n')
+    print('\n-1')
+    print('Res       ' + str(eitk(-1, 10000)))
     print('Iterated  ' + str(eitk_iterated(-1)))
     print('Simple    ' + str(eitk(-1, 300)))
-    print('\n')
+    print('\ne^{3ip/4}')
+    print('Res       ' + str(eitk((1j - 1) / math.sqrt(2), 10000)))
     print('Iterated  ' + str(eitk_iterated((1j - 1) / math.sqrt(2))))
     print('Simple    ' + str(eitk((1j - 1) / math.sqrt(2), 300)))
-    convergecce_speed()
-    convergecce_speed_iter()
-    convergecce_speed_in_Radius()
+    #convergence_speed()
+    #convergence_speed_iter()
+    #convergence_speed_in_Radius()
+    
+    #convergence_speed_for_N(-0.9, "conv_N_m09.png")
+    #convergence_speed_for_logN(-1, "conv_logN_m1.png")
+    #convergence_speed_for_logN(1j, "conv_logN_mi.png")
+    #convergence_speed_for_logN((1j - 1) / math.sqrt(2), "conv_logN_me075i.png")
