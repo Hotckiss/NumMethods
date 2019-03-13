@@ -47,7 +47,6 @@ def drawPlot(eigs, R):
     y.extend(eigs)
     y.append(0)
     
-    graph.subplot(211)
     graph.plot(x, y)
     graph.ylabel("eig_f(N)")
     graph.xlabel("N")
